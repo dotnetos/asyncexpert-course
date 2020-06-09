@@ -28,12 +28,7 @@ namespace Dotnetos.AsyncExpert.Homework.Module01.Benchmark
         {
             return 0;
         }
-
-        private static ulong RecursiveMemo(ulong n, ulong[] results)
-        {
-            return 0;
-        }
-
+        
         [Benchmark]
         [ArgumentsSource(nameof(Data))]
         public ulong Iterative(ulong n)
