@@ -1,22 +1,23 @@
 ﻿using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 namespace DataStructures
 {
     public class ConcurrentDictionaryWithCounterMetricsCounter : IMetricsCounter
     {
-        // Implement this class using ConcurrentDictionary and the provided AtomicCounter class.
-        // AtomicCounter should be created only once per key, then its Increment method should be used.
+        readonly ConcurrentDictionary<string, AtomicCounter> counters = new ConcurrentDictionary<string, AtomicCounter>();
         
         public IEnumerator<KeyValuePair<string, int>> GetEnumerator()
         {
-            throw new System.NotImplementedException();
+            return counters.Select(kvp => new KeyValuePair<string, int>(kvp.Key, kvp.Value.Count)).GetEnumerator();
         }
 
         public void Increment(string key)
         {
-            throw new System.NotImplementedException();
+            counters.GetOrAdd(key, _ => new AtomicCounter()).Increment();
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
