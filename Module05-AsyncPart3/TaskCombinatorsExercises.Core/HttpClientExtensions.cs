@@ -23,7 +23,37 @@ namespace TaskCombinatorsExercises.Core
         public static async Task<string> ConcurrentDownloadAsync(this HttpClient httpClient,
             string[] urls, int millisecondsTimeout, CancellationToken token)
         {
-            return String.Empty;
+            using CancellationTokenSource cts =
+                CancellationTokenSource.CreateLinkedTokenSource(token);
+            cts.CancelAfter(millisecondsTimeout);
+            var tasks = urls.Select(url => httpClient.GetAsync(url, cts.Token));
+            var whenAnyTask = await Task.WhenAny(tasks);
+            cts.Cancel();
+            var message = await whenAnyTask;
+            var result = await message.Content.ReadAsStringAsync();
+            return result;
+        }
+
+        public static async Task<string> ConcurrentDownloadAsync_Approach1(this HttpClient httpClient,
+            string[] urls, int millisecondsTimeout, CancellationToken token)
+        {
+            var urlTasks = urls.Select(url => httpClient.GetAsync(url));
+            var urlTask = Task.WhenAny(urlTasks);
+            var timeoutTask = Task.Delay(millisecondsTimeout, token);
+            var resultTask = Task.WhenAny(timeoutTask, urlTask);
+            if (resultTask == timeoutTask)
+            {
+                throw new TaskCanceledException();
+            }
+            else
+            {
+                var urlResult = await urlTask;
+                var message = await urlResult;
+                var result = await message.Content.ReadAsStringAsync();
+                return result;
+            }
         }
     }
+    
+
 }
