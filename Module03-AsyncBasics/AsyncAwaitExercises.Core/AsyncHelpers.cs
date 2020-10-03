@@ -19,7 +19,7 @@ namespace AsyncAwaitExercises.Core
             // * token should be able to cancel both HTTP call and the retry delay
             // * if all retries fails, the method should throw the exception of the last try
             // HINTS:
-            // * `HttpClient.GetAsync` does not accept cancellation token (use `GetAsync` instead)
+            // * `HttpClient.GetStringAsync` does not accept cancellation token (use `GetAsync` instead)
             // * you may use `EnsureSuccessStatusCode()` method
 
             return string.Empty;
