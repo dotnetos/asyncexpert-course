@@ -21,7 +21,7 @@ namespace DataStructures.Tests
             var originalKeys = Enumerable.Range(0, KeyCount).Select(i => i.ToString()).ToArray();
             var keys = Enumerable.Repeat(originalKeys, ConcurrentWriters).SelectMany(m => m).ToArray();
 
-            var starter = new TaskCompletionSource<object>();
+            var starter = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var counter = new TMetricCounter();
 
             // run two tasks per key
