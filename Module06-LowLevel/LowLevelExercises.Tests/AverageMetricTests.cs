@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using LowLevelExercises.Core;
 using NUnit.Framework;
 
@@ -26,36 +27,45 @@ namespace LowLevelExercises.Tests
         }
 
         [Test]
-        public async Task CountingTest()
+        [Category("Long running")]
+        [Category("Threading")]
+        public void Eventually_returns_value_when_multiple_threads()
         {
-            const int count = 1000000;
-            
-            var starter = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            const int threadCount = 8;
+            const int spinCount = 1000_000;
+
+            var threads = new Thread[threadCount];
+            var wait = new ManualResetEvent(false);
+
             var metric = new TAverageMetric();
 
-            var reporting1 = Task.Run(async () =>
+            for (var i = 0; i < threadCount; i++)
             {
-                await starter.Task;
-                for (var i = 0; i < count; i++)
+                var threadNo = i;
+                threads[i] = new Thread(() =>
                 {
-                    metric.Report(1);
-                }
-            });
+                    wait.WaitOne();
 
-            var reporting3 = Task.Run(async () =>
+                    for (var j = 0; j < spinCount; j++)
+                    {
+                        metric.Report(threadNo % 2); // report 0 or 1
+                    }
+                });
+            }
+
+            foreach (var thread in threads)
             {
-                await starter.Task;
-                for (var i = 0; i < count; i++)
-                {
-                    metric.Report(3);
-                }
-            });
+                thread.Start();
+            }
 
-            // start it
-            starter.SetResult(starter);
-            await Task.WhenAll(reporting1, reporting3).ConfigureAwait(false);
+            wait.Set();
 
-            Assert.AreEqual(2, metric.Average);
+            foreach (var thread in threads)
+            {
+                thread.Join();
+            }
+
+            Assert.AreEqual(0.5d, metric.Average);
         }
     }
 }
