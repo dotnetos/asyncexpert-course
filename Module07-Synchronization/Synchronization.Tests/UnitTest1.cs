@@ -22,7 +22,7 @@ namespace Synchronization.Tests
         {
             var path = @"..\..\..\..\..\Synchronization\bin\x64\Debug\netcoreapp3.1\Synchronization.exe";
 
-            var result = await RunProgramAsync(path, "name false");
+            var result = await RunProgramAsync(path, "name true");
 
             Assert.Equal("Hello world!\r\n", result);
         }
